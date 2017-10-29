@@ -29,6 +29,10 @@ void decifraComChave(unsigned char *key, unsigned char *cifrado){
     for(int blocoAtual = 0; blocoAtual<92; blocoAtual++){
 
         memcpy(blocoDecifrar, blocos[blocoAtual], 16);
+        //for(int i=0; i<16; i++){
+          //  printf("%d ", blocoDecifrar[i]);
+        //}
+        //printf("\n");
         AES_ecb_encrypt(blocoDecifrar, bloco_claro, &chave, AES_DECRYPT);
         memcpy(bloco_claro_print, bloco_claro, 16);
         bloco_claro_print[16] = "\0";
@@ -37,7 +41,6 @@ void decifraComChave(unsigned char *key, unsigned char *cifrado){
 
     }
 }
-
 
 int main(){
 
@@ -92,8 +95,10 @@ int main(){
 
     for(int i=0; i<16; i++){
         mpz_mod(AESProdKey, K, Div256);
+        //printf("Key = %s\n", mpz_get_str(NULL, 10, K));
+        //printf("MOD = %s\n", mpz_get_str(NULL, 10, AESProdKey));
         AESKey[i] = (int) mpz_get_ui(AESProdKey);
-        mpz_cdiv_q(K, K, Div256);
+        mpz_fdiv_q(K, K, Div256);
         printf("%d\n", AESKey[i]);
     }
     //mpz_mod(AESProdKey, K, Div256);
