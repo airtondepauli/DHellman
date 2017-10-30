@@ -8,6 +8,8 @@
 
 void decifraComChave(unsigned char *key, unsigned char *cifrado){
 
+    //FILE *fp = fopen("/Users/Airton/Desktop/Decifrado1.txt", "w+");
+
     AES_KEY chave;
 
     unsigned char *blocos[92]; //#Linhas
@@ -31,8 +33,74 @@ void decifraComChave(unsigned char *key, unsigned char *cifrado){
     }
 }
 
-int main(){
+void testDesafio2(mpz_t Key){
 
+
+    mpz_t n, g, BobPublicKey, AlicePublicKey, BobSecretKey, exp2, exp3, exp5, exp7, tolBob, BobPublicKeyTest;
+    char nRep[] = "340282366920938463463374607431768211297";
+    char gRep[] = "2";
+    char BobRep[] = "53433919510811966366616401819103159032";
+    char AliceRep[] = "40362037268068745080703064746809964248";
+
+    mpz_init_set_str(n, nRep, 10);
+    mpz_init_set_str(g, gRep, 10);
+    mpz_init_set_str(BobPublicKey, BobRep, 10);
+    mpz_init_set_str(AlicePublicKey, AliceRep, 10);
+    mpz_init(BobSecretKey);
+    mpz_init(exp2);
+    mpz_init(exp3);
+    mpz_init(exp5);
+    mpz_init(exp7);
+    mpz_init(tolBob);
+    mpz_init(BobPublicKeyTest);
+
+
+    mpz_ui_pow_ui(tolBob, 10, 50);
+
+    //Bob usa gerador de randomicos fraco
+    // Y(BOB) = g^y mod n => y = 2^x*3^y*5^w*7^z
+    // y tem menos que 50 digitos
+
+    for(unsigned long int x=1; x<=166; x++){
+        for(unsigned long int y=1; y<=104; y++){
+            for(unsigned long int w=1; w<=71; w++){
+                for(unsigned long int z=1; z<=59; z++){
+                    mpz_ui_pow_ui(exp2, 2, x);
+                    mpz_ui_pow_ui(exp3, 3, y);
+                    mpz_ui_pow_ui(exp5, 5, w);
+                    mpz_ui_pow_ui(exp7, 7, z);
+                    mpz_mul(BobSecretKey, exp2, exp3);
+                    mpz_mul(BobSecretKey, BobSecretKey, exp5);
+                    mpz_mul(BobSecretKey, BobSecretKey, exp7);
+                    if(mpz_cmp(BobSecretKey, tolBob)>0){    //if o y gerado é maior que 10^49
+                        //printf("%d\n", z);
+                        break;
+                    }
+                    else{
+                        mpz_powm(BobPublicKeyTest, g, BobSecretKey, n);
+                        //printf("%s\n", mpz_get_str(NULL, 10, BobPublicKeyTest));
+                        if(mpz_cmp(BobPublicKey, BobPublicKeyTest) == 0){
+                            printf("***************  ACHOU!!!!  ******************\n");
+                            printf("y = %s\n", mpz_get_str(NULL, 10, BobSecretKey));
+                            printf("Seeds: x = %d, y = %d, w = %d, z = %d\n", x, y, w, z);
+                            printf("*************************************************\n");
+                            x = 167;
+                            y = 105;
+                            w = 73;
+                            z = 60;
+                            break;
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+    mpz_set(Key, BobSecretKey);
+
+}
+
+int main(){
     /*******************INICIALIZACAO************************/
 
     mpz_t gInv, g, n, X, Y, inversoTeste, K, x, KeyTest, AESProdKey, Div256;
@@ -99,6 +167,15 @@ int main(){
     }
 
     decifraComChave(AESKEYTODEC, TextoCripto);
+
+    mpz_t BobSecretKey;
+    mpz_init(BobSecretKey);
+
+    testDesafio2(BobSecretKey);
+    //printf("%s\n", mpz_get_str(NULL, 10, BobSecretKey));
+
+
+
 
     return 0;
 }
